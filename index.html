@@ -505,9 +505,35 @@
     const themes = ['default', 'dark', 'lilac', 'professional'];
     let calcInput = '';
     
+    // Função para obter hora de Brasília (UTC-3)
+    function getBrasiliaTime() {
+      const now = new Date();
+      // Ajusta para o fuso horário de Brasília (UTC-3)
+      const offset = -3 * 60; // Brasília está 3 horas atrás do UTC
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      return new Date(utc + (3600000 * offset/60));
+    }
+    
+    // Função para formatar hora
+    function formatTime(date) {
+      return date.toLocaleTimeString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    }
+    
     // Inicialização quando o DOM estiver carregado
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('Painel iniciado!');
+      console.log('Painel iniciado! Verificando elementos...');
+      
+      // Verifica se os elementos existem
+      if (!document.getElementById('calendarDays') || !document.getElementById('setores-container')) {
+        console.error('Elementos críticos não encontrados!');
+        alert('Erro: Elementos da página não carregados corretamente. Recarregue a página.');
+        return;
+      }
       
       // Configurar tabs
       setupTabs();
@@ -533,6 +559,14 @@
       currentThemeIndex = themes.indexOf(savedTheme);
     });
     
+    // Função para atualizar o relógio - CORRIGIDA PARA BRASÍLIA
+    function updateClock() {
+      const brasiliaTime = getBrasiliaTime();
+      document.getElementById('clock').textContent = `⏰ ${formatTime(brasiliaTime)}`;
+      updateMotivationalMessage();
+      updateDaySummary();
+    }
+    
     // Função para configurar as tabs
     function setupTabs() {
       const tabs = document.querySelectorAll('.tab');
@@ -548,17 +582,10 @@
       });
     }
     
-    // Função para atualizar o relógio
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('clock').textContent = `⏰ ${now.toLocaleTimeString('pt-BR')}`;
-      updateMotivationalMessage();
-      updateDaySummary();
-    }
-    
     // Função para atualizar a mensagem motivacional
     function updateMotivationalMessage() {
-      const hour = new Date().getHours();
+      const brasiliaTime = getBrasiliaTime();
+      const hour = brasiliaTime.getHours();
       const messages = {
         morning: [
           "Bom dia! Que seu dia seja produtivo e cheio de conquistas!",
@@ -698,10 +725,10 @@
     
     // Função para atualizar resumo do dia
     function updateDaySummary() {
-      const now = new Date();
-      const endOfWork = new Date();
+      const brasiliaTime = getBrasiliaTime();
+      const endOfWork = new Date(brasiliaTime);
       endOfWork.setHours(17, 30, 0, 0);
-      const diff = endOfWork - now;
+      const diff = endOfWork - brasiliaTime;
       
       let msg = '';
       if (diff > 0) {
@@ -731,19 +758,19 @@
       }
     }
     
-    // Função para gerar calendário
+    // Função para gerar calendário - CORRIGIDA
     function generateCalendar() {
-      const now = new Date();
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
+      const brasiliaTime = getBrasiliaTime();
+      const currentMonth = brasiliaTime.getMonth();
+      const currentYear = brasiliaTime.getFullYear();
+      
+      // Nomes dos meses
+      const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                         "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
       
       // Configurar cabeçalho do mês/ano
-      const monthYear = new Date(currentYear, currentMonth).toLocaleDateString('pt-BR', { 
-        month: 'long', 
-        year: 'numeric' 
-      }).toUpperCase();
-      
-      document.getElementById('currentMonthYear').textContent = monthYear;
+      document.getElementById('currentMonthYear').textContent = 
+        `${monthNames[currentMonth]} ${currentYear}`.toUpperCase();
       
       // Configurar cabeçalho dos dias da semana
       const daysHeader = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
@@ -758,7 +785,7 @@
       });
       
       // Configurar dias do mês
-      const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+      const firstDay = new Date(currentYear, currentMonth, 1).getDay(); // 0=Domingo, 1=Segunda...
       const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
       
       const calendarDays = document.getElementById('calendarDays');
@@ -778,12 +805,12 @@
         dayElement.textContent = i;
         
         // Marcar dia atual
-        if (i === now.getDate() && currentMonth === now.getMonth() && currentYear === now.getFullYear()) {
+        if (i === brasiliaTime.getDate() && currentMonth === brasiliaTime.getMonth()) {
           dayElement.classList.add('today');
         }
         
         // Marcar dias passados
-        if (i < now.getDate() && currentMonth === now.getMonth() && currentYear === now.getFullYear()) {
+        if (i < brasiliaTime.getDate() && currentMonth === brasiliaTime.getMonth()) {
           dayElement.classList.add('past');
         }
         
@@ -791,16 +818,25 @@
       }
     }
     
-    // Função para carregar setores
+    // Função para carregar setores - CORRIGIDA
     function loadSectors() {
-      const sectors = JSON.parse(localStorage.getItem('juliaSectors') || [
-        'Ativações e Reparos', 'Zeladoria', 'Almoxarifado', 'Logística', 
-        'Help Desk', 'Frotas', 'Conservação', 'Redes e Infraestrutura', 
-        'Torre', 'Projetos'
-      ]);
+      let sectors = JSON.parse(localStorage.getItem('juliaSectors'));
+      
+      // Se não existir no localStorage, inicializa com os setores padrão
+      if (!sectors) {
+        sectors = [
+          'Ativações e Reparos', 'Zeladoria', 'Almoxarifado', 'Logística', 
+          'Help Desk', 'Frotas', 'Conservação', 'Redes e Infraestrutura', 
+          'Torre', 'Projetos'
+        ];
+        localStorage.setItem('juliaSectors', JSON.stringify(sectors));
+      }
       
       const container = document.getElementById('setores-container');
-      if (!container) return;
+      if (!container) {
+        console.error("Container de setores não encontrado!");
+        return;
+      }
       
       container.innerHTML = '';
       
@@ -840,7 +876,7 @@
             sectors.splice(index, 1);
             localStorage.setItem('juliaSectors', JSON.stringify(sectors));
             localStorage.removeItem(`sector_${name}`);
-            loadSectors();
+            loadSectors(); // Recarrega a lista após remoção
           }
         };
         
@@ -854,16 +890,23 @@
       });
     }
     
-    // Função para adicionar novo setor
+    // Função para adicionar novo setor - CORRIGIDA
     window.addNewSector = function() {
       const name = prompt('Digite o nome do novo setor:');
       if (name && name.trim()) {
         const formattedName = name.trim();
-        const sectors = JSON.parse(localStorage.getItem('juliaSectors') || []);
+        let sectors = JSON.parse(localStorage.getItem('juliaSectors')) || [];
         
         if (!sectors.includes(formattedName)) {
           sectors.push(formattedName);
           localStorage.setItem('juliaSectors', JSON.stringify(sectors));
+          
+          // Cria espaço no localStorage para as anotações deste setor
+          if (!localStorage.getItem(`sector_${formattedName}`)) {
+            localStorage.setItem(`sector_${formattedName}`, '');
+          }
+          
+          // Recarrega a lista de setores para mostrar o novo
           loadSectors();
         } else {
           alert('Este setor já existe!');
