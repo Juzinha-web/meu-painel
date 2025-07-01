@@ -204,6 +204,7 @@
       width: 100%;
     }
     
+    /* Correções para a calculadora */
     .calculator-modal {
       display: none;
       position: fixed;
@@ -219,48 +220,38 @@
     
     .calculator-content {
       background-color: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-      width: 280px;
-      text-align: center;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      width: 260px;
     }
     
     .calculator-content input {
-      width: 100%;
+      width: calc(100% - 30px);
       padding: 15px;
       font-size: 1.5em;
       border: 2px solid var(--primary-color);
       border-radius: 8px;
       margin-bottom: 15px;
       text-align: right;
-      background-color: #f8f9fa;
+    }
+    
+    .calculator-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
     }
     
     .calculator-content button {
-      background-color: var(--primary-color);
-      color: white;
-      padding: 15px;
-      border: none;
-      border-radius: 8px;
+      width: 100%;
+      height: 50px;
       font-size: 1.2em;
-      cursor: pointer;
-      width: 50px;
-      margin: 5px;
+      padding: 0;
+      margin: 0;
     }
     
     .calculator-content button.operator {
       background-color: var(--accent-color);
-    }
-    
-    .calculator-content button:active {
-      transform: scale(0.95);
-    }
-    
-    .calculator-content div {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
     }
     
     .close-btn {
@@ -269,9 +260,81 @@
       width: 100%;
     }
     
+    /* Correções para o calendário */
+    .calendar {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .calendar-title {
+      font-weight: 600;
+      color: var(--primary-color);
+      font-size: 1.1em;
+    }
+    
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+    
+    .calendar-day-header {
+      text-align: center;
+      font-weight: 600;
+      color: var(--primary-color);
+      padding: 5px;
+      font-size: 0.9em;
+    }
+    
+    .calendar-day {
+      text-align: center;
+      padding: 8px 5px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      font-size: 0.9em;
+      min-height: 30px;
+    }
+    
+    .calendar-day:hover {
+      background-color: rgba(106, 90, 205, 0.1);
+    }
+    
+    .calendar-day.today {
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: 600;
+    }
+    
+    .calendar-day.past {
+      color: #aaa;
+    }
+    
+    /* Correções para o resumo do dia */
+    #resumoDia {
+      background-color: rgba(106, 90, 205, 0.05);
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+    
+    /* Correções para as tabs */
+    .tabs-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
     .tabs {
       display: flex;
-      margin-bottom: 15px;
+      margin-bottom: 0;
       border-bottom: 1px solid #ddd;
     }
     
@@ -296,58 +359,7 @@
       display: block;
     }
     
-    .calendar {
-      width: 100%;
-    }
-    
-    .calendar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    
-    .calendar-title {
-      font-weight: 600;
-      color: var(--primary-color);
-    }
-    
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 5px;
-    }
-    
-    .calendar-day-header {
-      text-align: center;
-      font-weight: 600;
-      color: var(--primary-color);
-      padding: 5px;
-      font-size: 0.9em;
-    }
-    
-    .calendar-day {
-      text-align: center;
-      padding: 8px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    
-    .calendar-day:hover {
-      background-color: rgba(106, 90, 205, 0.1);
-    }
-    
-    .calendar-day.today {
-      background-color: var(--primary-color);
-      color: white;
-      font-weight: 600;
-    }
-    
-    .calendar-day.past {
-      color: #aaa;
-    }
-    
+    /* Temas */
     body[data-theme="dark"] {
       --primary-color: #9370db;
       --secondary-color: #7b5dd6;
@@ -399,24 +411,26 @@
   <main>
     <div class="card">
       <h2>📝 Tarefas</h2>
-      <div class="tabs">
-        <div class="tab active" data-tab="daily">Diárias</div>
-        <div class="tab" data-tab="weekly">Semanais</div>
-      </div>
-      
-      <div class="tab-content active" id="daily-tasks">
-        <div id="taskList"></div>
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-          <input id="newTaskInput" type="text" placeholder="Nova tarefa diária..." style="flex-grow: 1;">
-          <button onclick="addTask('daily')">+</button>
+      <div class="tabs-container">
+        <div class="tabs">
+          <div class="tab active" data-tab="daily">Diárias</div>
+          <div class="tab" data-tab="weekly">Semanais</div>
         </div>
-      </div>
-      
-      <div class="tab-content" id="weekly-tasks">
-        <div id="weeklyTaskList"></div>
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-          <input id="newWeeklyTaskInput" type="text" placeholder="Nova tarefa semanal..." style="flex-grow: 1;">
-          <button onclick="addTask('weekly')">+</button>
+        
+        <div class="tab-content active" id="daily-tasks">
+          <div id="taskList"></div>
+          <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <input id="newTaskInput" type="text" placeholder="Nova tarefa diária..." style="flex-grow: 1;">
+            <button onclick="addTask('daily')">+</button>
+          </div>
+        </div>
+        
+        <div class="tab-content" id="weekly-tasks">
+          <div id="weeklyTaskList"></div>
+          <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <input id="newWeeklyTaskInput" type="text" placeholder="Nova tarefa semanal..." style="flex-grow: 1;">
+            <button onclick="addTask('weekly')">+</button>
+          </div>
         </div>
       </div>
       
@@ -460,7 +474,7 @@
   <div id="calculatorModal" class="calculator-modal">
     <div class="calculator-content">
       <input type="text" id="calcInput" readonly>
-      <div>
+      <div class="calculator-buttons">
         <button onclick="addToCalc('7')">7</button>
         <button onclick="addToCalc('8')">8</button>
         <button onclick="addToCalc('9')">9</button>
@@ -493,7 +507,7 @@
     
     // Inicialização quando o DOM estiver carregado
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('Painel iniciado!'); // Verifique no console do navegador
+      console.log('Painel iniciado!');
       
       // Configurar tabs
       setupTabs();
@@ -524,11 +538,9 @@
       const tabs = document.querySelectorAll('.tab');
       tabs.forEach(tab => {
         tab.addEventListener('click', function() {
-          // Remover classe active de todas as tabs e conteúdos
           document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
           document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
           
-          // Adicionar classe active à tab clicada e ao conteúdo correspondente
           this.classList.add('active');
           const tabId = this.getAttribute('data-tab') + '-tasks';
           document.getElementById(tabId).classList.add('active');
@@ -540,6 +552,8 @@
     function updateClock() {
       const now = new Date();
       document.getElementById('clock').textContent = `⏰ ${now.toLocaleTimeString('pt-BR')}`;
+      updateMotivationalMessage();
+      updateDaySummary();
     }
     
     // Função para atualizar a mensagem motivacional
@@ -572,10 +586,8 @@
         period = 'evening';
       }
       
-      // Seleciona uma mensagem aleatória do período
       const periodMessages = messages[period];
       message = periodMessages[Math.floor(Math.random() * periodMessages.length)];
-      
       document.getElementById('motivationalMessage').textContent = message;
     }
     
@@ -598,7 +610,6 @@
           task.done = this.checked;
           saveTasks(type, tasks);
           
-          // Se a tarefa estiver marcada como feita, remove após 1 segundo (apenas para diárias)
           if (this.checked && type === 'daily') {
             setTimeout(() => {
               tasks.splice(i, 1);
@@ -632,13 +643,13 @@
       });
     }
     
-    // Função para salvar tarefas no localStorage
+    // Função para salvar tarefas
     function saveTasks(type, tasks) {
       localStorage.setItem(`juliaTasks_${type}`, JSON.stringify(tasks));
       updateDaySummary();
     }
     
-    // Função para adicionar nova tarefa (global)
+    // Função para adicionar nova tarefa
     window.addTask = function(type) {
       const input = document.getElementById(type === 'daily' ? 'newTaskInput' : 'newWeeklyTaskInput');
       if (!input) return;
@@ -671,7 +682,7 @@
       localStorage.setItem('juliaPanelTheme', theme);
     }
     
-    // Função para trocar tema (global)
+    // Função para trocar tema
     window.switchTheme = function() {
       currentThemeIndex = (currentThemeIndex + 1) % themes.length;
       const newTheme = themes[currentThemeIndex];
@@ -679,7 +690,7 @@
       document.getElementById('themeSelector').value = newTheme;
     };
     
-    // Função para mudar tema via selector (global)
+    // Função para mudar tema via selector
     window.changeTheme = function(theme) {
       applyTheme(theme);
       currentThemeIndex = themes.indexOf(theme);
@@ -727,11 +738,12 @@
       const currentYear = now.getFullYear();
       
       // Configurar cabeçalho do mês/ano
-      document.getElementById('currentMonthYear').textContent = 
-        new Date(currentYear, currentMonth).toLocaleDateString('pt-BR', { 
-          month: 'long', 
-          year: 'numeric' 
-        }).toUpperCase();
+      const monthYear = new Date(currentYear, currentMonth).toLocaleDateString('pt-BR', { 
+        month: 'long', 
+        year: 'numeric' 
+      }).toUpperCase();
+      
+      document.getElementById('currentMonthYear').textContent = monthYear;
       
       // Configurar cabeçalho dos dias da semana
       const daysHeader = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
@@ -752,7 +764,7 @@
       const calendarDays = document.getElementById('calendarDays');
       calendarDays.innerHTML = '';
       
-      // Dias vazios no início (se o mês não começar no domingo)
+      // Dias vazios no início
       for (let i = 0; i < firstDay; i++) {
         const emptyDay = document.createElement('div');
         emptyDay.className = 'calendar-day';
@@ -842,7 +854,7 @@
       });
     }
     
-    // Função para adicionar novo setor (global)
+    // Função para adicionar novo setor
     window.addNewSector = function() {
       const name = prompt('Digite o nome do novo setor:');
       if (name && name.trim()) {
@@ -859,7 +871,7 @@
       }
     };
     
-    // Funções da Calculadora (globais)
+    // Funções da Calculadora
     window.openCalculator = function() {
       document.getElementById('calculatorModal').style.display = 'flex';
     };
@@ -875,7 +887,6 @@
     
     window.calculate = function() {
       try {
-        // Substituir × por * para avaliação
         const expression = calcInput.replace(/×/g, '*');
         calcInput = eval(expression).toString();
         document.getElementById('calcInput').value = calcInput;
