@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Painel da Julia 💼</title>
+  <style>
+    :root {
+      --primary-color: #6a5acd;
+      --secondary-color: #9370db;
+      --accent-color: #ff7e5f;
+      --text-color: #333;
+      --light-bg: #f8f9fa;
+      --card-bg: #fff;
+      --header-bg: #6a5acd;
+    }
+    
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background-color: var(--light-bg);
+      color: var(--text-color);
+      transition: all 0.3s ease;
+      line-height: 1.6;
+    }
+    
+    header {
+      background-color: var(--header-bg);
+      color: white;
+      text-align: center;
+      padding: 20px 0;
+      font-size: 1.4em;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    #clock { 
+      font-size: 1.2em; 
+      margin-top: 5px;
+      opacity: 0.9;
+      font-weight: 500;
+    }
+    
+    #motivationalMessage {
+      font-size: 1.1em;
+      color: white;
+      margin-top: 10px;
+      font-weight: 500;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 0 10px;
+    }
+    
+    main {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 20px;
+      justify-content: center;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      padding: 20px;
+      flex: 1 1 350px;
+      min-height: 300px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    }
+    
+    .card h2 {
+      color: var(--primary-color);
+      font-size: 1.3em;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--secondary-color);
+      display: flex;
+      align-items: center;
+    }
+    
+    .card h2::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 20px;
+      background-color: var(--accent-color);
+      margin-right: 10px;
+      border-radius: 4px;
+    }
+    
+    .task-item { 
+      margin: 8px 0;
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      border-radius: 6px;
+      transition: background-color 0.2s;
+    }
+    
+    .task-item:hover {
+      background-color: rgba(106, 90, 205, 0.05);
+    }
+    
+    .task-item input[type="checkbox"] {
+      margin-right: 10px;
+      cursor: pointer;
+      transform: scale(1.2);
+    }
+    
+    .task-item .task-text {
+      flex-grow: 1;
+    }
+    
+    .task-item .delete-task {
+      color: #ff6b6b;
+      cursor: pointer;
+      margin-left: 10px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    .task-item:hover .delete-task {
+      opacity: 1;
+    }
+    
+    .completed {
+      text-decoration: line-through;
+      color: #888;
+    }
+    
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      font-family: inherit;
+      transition: border-color 0.3s;
+    }
+    
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+    
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    
+    button:hover {
+      background-color: var(--secondary-color);
+      transform: translateY(-2px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    .sector-card {
+      background-color: rgba(106, 90, 205, 0.05);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-left: 3px solid var(--primary-color);
+    }
+    
+    .sector-card h3 {
+      margin-top: 0;
+      color: var(--primary-color);
+    }
+    
+    .lock-btn {
+      background-color: #6c757d;
+      margin-top: 8px;
+      font-size: 0.9em;
+      padding: 6px 12px;
+    }
+    
+    .lock-btn:hover {
+      background-color: #5a6268;
+    }
+    
+    .theme-btn {
+      margin-top: 15px;
+      width: 100%;
+    }
+    
+    .calc-btn {
+      margin-top: 20px;
+      width: 100%;
+    }
+    
+    /* Modal da calculadora */
+    .calculator-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    .calculator-content {
+      background-color: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      width: 280px;
+      text-align: center;
+    }
+    
+    .calculator-content input {
+      width: 100%;
+      padding: 15px;
+      font-size: 1.5em;
+      border: 2px solid var(--primary-color);
+      border-radius: 8px;
+      margin-bottom: 15px;
+      text-align: right;
+      background-color: #f8f9fa;
+    }
+    
+    .calculator-content button {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.2em;
+      cursor: pointer;
+      width: 50px;
+      margin: 5px;
+    }
+    
+    .calculator-content button.operator {
+      background-color: var(--accent-color);
+    }
+    
+    .calculator-content button:active {
+      transform: scale(0.95);
+    }
+    
+    .calculator-content div {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .close-btn {
+      background-color: var(--accent-color);
+      margin-top: 15px;
+      width: 100%;
+    }
+    
+    /* Tabs */
+    .tabs {
+      display: flex;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .tab {
+      padding: 8px 15px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+    }
+    
+    .tab.active {
+      border-bottom: 2px solid var(--primary-color);
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* Calendário */
+    .calendar {
+      width: 100%;
+    }
+    
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .calendar-title {
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+    
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+    
+    .calendar-day-header {
+      text-align: center;
+      font-weight: 600;
+      color: var(--primary-color);
+      padding: 5px;
+      font-size: 0.9em;
+    }
+    
+    .calendar-day {
+      text-align: center;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .calendar-day:hover {
+      background-color: rgba(106, 90, 205, 0.1);
+    }
+    
+    .calendar-day.today {
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: 600;
+    }
+    
+    .calendar-day.past {
+      color: #aaa;
+    }
+    
+    .calendar-day.completed {
+      text-decoration: line-through;
+    }
+    
+    /* Dark Theme */
+    body[data-theme="dark"] {
+      --primary-color: #9370db;
+      --secondary-color: #7b5dd6;
+      --accent-color: #ff9f7f;
+      --text-color: #eee;
+      --light-bg: #2a2a2a;
+      --card-bg: #3a3a3a;
+      --header-bg: #1a1a1a;
+    }
+    
+    /* Lilac Theme */
+    body[data-theme="lilac"] {
+      --primary-color: #9c7bd8;
+      --secondary-color: #b399e6;
+      --accent-color: #ffa07a;
+      --text-color: #333;
+      --light-bg: #f0e6ff;
+      --card-bg: #f7f2ff;
+      --header-bg: #9c7bd8;
+    }
+    
+    /* Professional Theme */
+    body[data-theme="professional"] {
+      --primary-color: #4b6cb7;
+      --secondary-color: #6b8ce8;
+      --accent-color: #5cb85c;
+      --text-color: #333;
+      --light-bg: #f5f7fa;
+      --card-bg: #fff;
+      --header-bg: #4b6cb7;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+      main {
+        padding: 15px;
+      }
+      
+      .card {
+        flex: 1 1 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    Painel da Julia 💼
+    <div id="clock">Carregando...</div>
+    <div id="motivationalMessage">Bem-vinda ao seu painel pessoal!</div>
+  </header>
+  <main>
+    <div class="card">
+      <h2>📝 Tarefas</h2>
+      <div class="tabs">
+        <div class="tab active" data-tab="daily">Diárias</div>
+        <div class="tab" data-tab="weekly">Semanais</div>
+      </div>
+      
+      <div class="tab-content active" id="daily-tasks">
+        <div id="taskList"></div>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+          <input id="newTaskInput" type="text" placeholder="Nova tarefa diária..." style="flex-grow: 1;" />
+          <button onclick="addTask('daily')">+</button>
+        </div>
+      </div>
+      
+      <div class="tab-content" id="weekly-tasks">
+        <div id="weeklyTaskList"></div>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+          <input id="newWeeklyTaskInput" type="text" placeholder="Nova tarefa semanal..." style="flex-grow: 1;" />
+          <button onclick="addTask('weekly')">+</button>
+        </div>
+      </div>
+      
+      <h2>📌 Lembrete</h2>
+      <textarea id="lembrete" rows="4" placeholder="Anote seus lembretes importantes aqui..."></textarea>
+      
+      <h2>🎨 Personalização</h2>
+      <select id="themeSelector" onchange="changeTheme(this.value)">
+        <option value="default">Tema Padrão</option>
+        <option value="dark">Tema Escuro</option>
+        <option value="lilac">Tema Lilás</option>
+        <option value="professional">Tema Profissional</option>
+      </select>
+      <button class="theme-btn" onclick="switchTheme()">Próximo Tema</button>
+    </div>
+    
+    <div class="card">
+      <h2>📂 Setores</h2>
+      <div id="setores-container"></div>
+      <button onclick="addNewSector()" style="margin-top: 10px;">+ Adicionar Setor</button>
+    </div>
+    
+    <div class="card">
+      <h2>📅 Calendário</h2>
+      <div class="calendar">
+        <div class="calendar-header">
+          <div class="calendar-title" id="currentMonthYear"></div>
+        </div>
+        <div class="calendar-grid" id="calendarDaysHeader"></div>
+        <div class="calendar-grid" id="calendarDays"></div>
+      </div>
+      
+      <h2>📊 Resumo do Dia</h2>
+      <div id="resumoDia">Carregando...</div>
+      
+      <h2>🧮 Calculadora</h2>
+      <button class="calc-btn" onclick="openCalculator()">Abrir Calculadora</button>
+    </div>
+  </main>
+
+  <!-- Modal da Calculadora -->
+  <div id="calculatorModal" class="calculator-modal">
+    <div class="calculator-content">
+      <input type="text" id="calcInput" readonly />
+      <div>
+        <button onclick="addToCalc('7')">7</button>
+        <button onclick="addToCalc('8')">8</button>
+        <button onclick="addToCalc('9')">9</button>
+        <button class="operator" onclick="addToCalc('/')">/</button>
+        
+        <button onclick="addToCalc('4')">4</button>
+        <button onclick="addToCalc('5')">5</button>
+        <button onclick="addToCalc('6')">6</button>
+        <button class="operator" onclick="addToCalc('*')">×</button>
+        
+        <button onclick="addToCalc('1')">1</button>
+        <button onclick="addToCalc('2')">2</button>
+        <button onclick="addToCalc('3')">3</button>
+        <button class="operator" onclick="addToCalc('-')">-</button>
+        
+        <button onclick="addToCalc('0')">0</button>
+        <button onclick="addToCalc('.')">.</button>
+        <button onclick="calculate()">=</button>
+        <button class="operator" onclick="addToCalc('+')">+</button>
+      </div>
+      <button class="close-btn" onclick="closeCalculator()">Fechar</button>
+    </div>
+  </div>
+
+  <script>
+    // Variáveis globais
+    let currentThemeIndex = 0;
+    const themes = ['default', 'dark', 'lilac', 'professional'];
+    
+    // Inicialização quando o DOM estiver carregado
+    document.addEventListener('DOMContentLoaded', function() {
+      // Configurar tabs
+      setupTabs();
+      
+      // Inicializar relógio e atualizações
+      updateClock();
+      setInterval(updateClock, 1000);
+      updateDaySummary();
+      
+      // Carregar dados salvos
+      loadTasks('daily');
+      loadTasks('weekly');
+      loadNote();
+      loadSectors();
+      
+      // Inicializar calendário
+      generateCalendar();
+      
+      // Configurar tema inicial
+      const savedTheme = localStorage.getItem('juliaPanelTheme') || 'default';
+      applyTheme(savedTheme);
+      document.getElementById('themeSelector').value = savedTheme;
+      currentThemeIndex = themes.indexOf(savedTheme);
+    });
+    
+    // Função para configurar as tabs
+    function setupTabs() {
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // Remover classe active de todas as tabs e conteúdos
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          
+          // Adicionar classe active à tab clicada e ao conteúdo correspondente
+          this.classList.add('active');
+          const tabId = this.getAttribute('data-tab') + '-tasks';
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
+    }
+    
+    // Função para atualizar o relógio
+    function updateClock() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('pt-BR');
+      document.getElementById('clock').textContent = `⏰ ${timeString}`;
+      
+      updateMotivationalMessage();
+      updateDaySummary();
+      markCalendarDays();
+    }
+    
+    // Função para atualizar a mensagem motivacional
+    function updateMotivationalMessage() {
+      const hour = new Date().getHours();
+      const messages = {
+        morning: [
+          "Bom dia! Que seu dia seja produtivo e cheio de conquistas!",
+          "Bom dia! Aproveite cada momento para progredir em seus objetivos.",
+          "Bom dia! Comece com energia e foco nas suas prioridades."
+        ],
+        afternoon: [
+          "Boa tarde! Mantenha o foco e a produtividade!",
+          "Boa tarde! Aproveite para revisar suas metas do dia.",
+          "Boa tarde! Um ótimo momento para resolver tarefas importantes."
+        ],
+        evening: [
+          "Boa noite! Revise suas conquistas do dia e planeje o amanhã.",
+          "Boa noite! Descanse bem para recarregar as energias.",
+          "Boa noite! Celebre suas pequenas vitórias do dia."
+        ]
+      };
+      
+      let period, message;
+      if (hour >= 6 && hour < 12) {
+        period = 'morning';
+      } else if (hour >= 12 && hour < 18) {
+        period = 'afternoon';
+      } else {
+        period = 'evening';
+      }
+      
+      // Seleciona uma mensagem aleatória do período
+      const periodMessages = messages[period];
+      message = periodMessages[Math.floor(Math.random() * periodMessages.length)];
+      
+      document.getElementById('motivationalMessage').textContent = message;
+    }
+    
+    // Função para carregar tarefas
+    function loadTasks(type = 'daily') {
+      const tasks = JSON.parse(localStorage.getItem(`juliaTasks_${type}`) || [];
+      const list = document.getElementById(type === 'daily' ? 'taskList' : 'weeklyTaskList');
+      if (!list) return;
+      
+      list.innerHTML = '';
+      
+      tasks.forEach((task, i) => {
+        const div = document.createElement('div');
+        div.className = 'task-item';
+        
+        const check = document.createElement('input');
+        check.type = 'checkbox';
+        check.checked = task.done;
+        check.onchange = function() {
+          task.done = this.checked;
+          saveTasks(type, tasks);
+          
+          // Se a tarefa estiver marcada como feita, remove após 1 segundo (apenas para diárias)
+          if (this.checked && type === 'daily') {
+            setTimeout(() => {
+              tasks.splice(i, 1);
+              saveTasks(type, tasks);
+              loadTasks(type);
+            }, 1000);
+          } else {
+            loadTasks(type);
+          }
+        };
+        
+        const text = document.createElement('span');
+        text.className = 'task-text';
+        text.textContent = task.text;
+        if (task.done) text.classList.add('completed');
+        
+        const deleteBtn = document.createElement('span');
+        deleteBtn.className = 'delete-task';
+        deleteBtn.innerHTML = '🗑️';
+        deleteBtn.onclick = function(e) {
+          e.stopPropagation();
+          tasks.splice(i, 1);
+          saveTasks(type, tasks);
+          loadTasks(type);
+        };
+        
+        div.appendChild(check);
+        div.appendChild(text);
+        div.appendChild(deleteBtn);
+        list.appendChild(div);
+      });
+    }
+    
+    // Função para salvar tarefas no localStorage
+    function saveTasks(type, tasks) {
+      localStorage.setItem(`juliaTasks_${type}`, JSON.stringify(tasks));
+      updateDaySummary();
+    }
+    
+    // Função para adicionar nova tarefa
+    function addTask(type) {
+      const input = document.getElementById(type === 'daily' ? 'newTaskInput' : 'newWeeklyTaskInput');
+      if (!input) return;
+      
+      const text = input.value.trim();
+      if (!text) return;
+      
+      const tasks = JSON.parse(localStorage.getItem(`juliaTasks_${type}`) || '[]');
+      tasks.push({ text, done: false });
+      saveTasks(type, tasks);
+      
+      input.value = '';
+      loadTasks(type);
+    }
+    
+    // Função para carregar lembrete
+    function loadNote() {
+      const note = document.getElementById('lembrete');
+      if (note) {
+        note.value = localStorage.getItem('juliaNote') || '';
+        note.oninput = function() {
+          localStorage.setItem('juliaNote', this.value);
+        };
+      }
+    }
+    
+    // Função para aplicar tema
+    function applyTheme(theme) {
+      document.body.setAttribute('data-theme', theme);
+      localStorage.setItem('juliaPanelTheme', theme);
+    }
+    
+    // Função para trocar tema
+    function switchTheme() {
+      currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+      const newTheme = themes[currentThemeIndex];
+      applyTheme(newTheme);
+      document.getElementById('themeSelector').value = newTheme;
+    }
+    
+    // Função para mudar tema via selector
+    function changeTheme(theme) {
+      applyTheme(theme);
+      currentThemeIndex = themes.indexOf(theme);
+    }
+    
+    // Função para atualizar resumo do dia
+    function updateDaySummary() {
+      const now = new Date();
+      const endOfWork = new Date();
+      endOfWork.setHours(17, 30, 0, 0);
+      const diff = endOfWork - now;
+      
+      let msg = '';
+      if (diff > 0) {
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        msg = `⏳ Tempo restante até 17h30: <strong>${h}h ${m}min</strong>`;
+      } else {
+        msg = `✅ Expediente encerrado!`;
+      }
+      
+      const dailyTasks = JSON.parse(localStorage.getItem('juliaTasks_daily') || []);
+      const weeklyTasks = JSON.parse(localStorage.getItem('juliaTasks_weekly') || []);
+      
+      const doneDaily = dailyTasks.filter(t => t.done).length;
+      const totalDaily = dailyTasks.length;
+      
+      const doneWeekly = weeklyTasks.filter(t => t.done).length;
+      const totalWeekly = weeklyTasks.length;
+      
+      const summary = document.getElementById('resumoDia');
+      if (summary) {
+        summary.innerHTML = `
+          ${msg}<br>
+          📋 Tarefas diárias: <strong>${doneDaily}</strong> de ${totalDaily}<br>
+          📅 Tarefas semanais: <strong>${doneWeekly}</strong> de ${totalWeekly}
+        `;
+      }
+    }
+    
+    // Função para gerar calendário
+    function generateCalendar() {
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      
+      // Configurar cabeçalho do mês/ano
+      document.getElementById('currentMonthYear').textContent = 
+        new Date(currentYear, currentMonth).toLocaleDateString('pt-BR', { 
+          month: 'long', 
+          year: 'numeric' 
+        }).toUpperCase();
+      
+      // Configurar cabeçalho dos dias da semana
+      const daysHeader = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+      const calendarDaysHeader = document.getElementById('calendarDaysHeader');
+      calendarDaysHeader.innerHTML = '';
+      
+      daysHeader.forEach(day => {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day-header';
+        dayElement.textContent = day;
+        calendarDaysHeader.appendChild(dayElement);
+      });
+      
+      // Configurar dias do mês
+      const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      
+      const calendarDays = document.getElementById('calendarDays');
+      calendarDays.innerHTML = '';
+      
+      // Dias vazios no início (se o mês não começar no domingo)
+      for (let i = 0; i < firstDay; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day';
+        calendarDays.appendChild(emptyDay);
+      }
+      
+      // Dias do mês
+      for (let i = 1; i <= daysInMonth; i++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        dayElement.textContent = i;
+        
+        // Marcar dia atual
+        if (i === now.getDate() && currentMonth === now.getMonth() && currentYear === now.getFullYear()) {
+          dayElement.classList.add('today');
+        }
+        
+        // Marcar dias passados
+        if (i < now.getDate() && currentMonth === now.getMonth() && currentYear === now.getFullYear()) {
+          dayElement.classList.add('past');
+        }
+        
+        calendarDays.appendChild(dayElement);
+      }
+    }
+    
+    // Função para marcar dias no calendário
+    function markCalendarDays() {
+      // Implementação futura para marcar dias com tarefas completas
+    }
+    
+    // Função para carregar setores
+    function loadSectors() {
+      const sectors = JSON.parse(localStorage.getItem('juliaSectors') || [
+        'Ativações e Reparos', 'Zeladoria', 'Almoxarifado', 'Logística', 
+        'Help Desk', 'Frotas', 'Conservação', 'Redes e Infraestrutura', 
+        'Torre', 'Projetos'
+      ];
+      
+      const container = document.getElementById('setores-container');
+      if (!container) return;
+      
+      container.innerHTML = '';
+      
+      sectors.forEach((name, index) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'sector-card';
+        
+        const title = document.createElement('h3');
+        title.textContent = name;
+        
+        const textarea = document.createElement('textarea');
+        textarea.value = localStorage.getItem(`sector_${name}`) || '';
+        textarea.readOnly = true;
+        textarea.placeholder = `Anotações sobre ${name}...`;
+        textarea.oninput = function() {
+          localStorage.setItem(`sector_${name}`, this.value);
+        };
+        
+        const btnContainer = document.createElement('div');
+        btnContainer.style.display = 'flex';
+        btnContainer.style.gap = '5px';
+        
+        const btn = document.createElement('button');
+        btn.textContent = '🔒 Bloqueado';
+        btn.className = 'lock-btn';
+        btn.onclick = function() {
+          textarea.readOnly = !textarea.readOnly;
+          this.textContent = textarea.readOnly ? '🔒 Bloqueado' : '🔓 Editando';
+        };
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '❌';
+        deleteBtn.className = 'lock-btn';
+        deleteBtn.style.background = '#dc3545';
+        deleteBtn.onclick = function() {
+          if (confirm(`Remover o setor "${name}"?`)) {
+            sectors.splice(index, 1);
+            localStorage.setItem('juliaSectors', JSON.stringify(sectors));
+            localStorage.removeItem(`sector_${name}`);
+            loadSectors();
+          }
+        };
+        
+        btnContainer.appendChild(btn);
+        btnContainer.appendChild(deleteBtn);
+        
+        wrapper.appendChild(title);
+        wrapper.appendChild(textarea);
+        wrapper.appendChild(btnContainer);
+        container.appendChild(wrapper);
+      });
+    }
+    
+    // Função para adicionar novo setor
+    function addNewSector() {
+      const name = prompt('Digite o nome do novo setor:');
+      if (name && name.trim()) {
+        const formattedName = name.trim();
+        const sectors = JSON.parse(localStorage.getItem('juliaSectors') || []);
+        
+        if (!sectors.includes(formattedName)) {
+          sectors.push(formattedName);
+          localStorage.setItem('juliaSectors', JSON.stringify(sectors));
+          loadSectors();
+        } else {
+          alert('Este setor já existe!');
+        }
+      }
+    }
+    
+    // Funções da Calculadora
+    let calcInput = '';
+    function openCalculator() {
+      document.getElementById('calculatorModal').style.display = 'flex';
+    }
+    
+    function closeCalculator() {
+      document.getElementById('calculatorModal').style.display = 'none';
+    }
+    
+    function addToCalc(value) {
+      calcInput += value;
+      document.getElementById('calcInput').value = calcInput;
+    }
+    
+    function clearCalc() {
+      calcInput = '';
+      document.getElementById('calcInput').value = '';
+    }
+    
+    function calculate() {
+      try {
+        // Substituir × por * para avaliação
+        const expression = calcInput.replace(/×/g, '*');
+        calcInput = eval(expression).toString();
+        document.getElementById('calcInput').value = calcInput;
+      } catch (e) {
+        calcInput = '';
+        document.getElementById('calcInput').value = 'Erro';
+      }
+    }
+  </script>
+</body>
+</html>
